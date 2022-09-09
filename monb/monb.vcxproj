@@ -131,10 +131,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="monitor.cpp" />
+    <ClCompile Include="string_util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="monitor.h" />
     <ClInclude Include="colors.h" />
+    <ClInclude Include="logger.h" />
+    <ClInclude Include="string_util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
