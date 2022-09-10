@@ -3,7 +3,7 @@
 namespace library {
 	namespace logger {
 
-	// char string
+		// char string
 
 		void log(const char* message, LOG_SEVERITY log_severity) {
 

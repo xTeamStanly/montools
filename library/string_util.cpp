@@ -6,7 +6,7 @@
 namespace library {
 	namespace string_util {
 
-	// https://chromium.googlesource.com/chromium/src/base/+/refs/heads/main/strings/string_split_internal.h
+		// https://chromium.googlesource.com/chromium/src/base/+/refs/heads/main/strings/string_split_internal.h
 		void split_string(std::string input, char delimeter, std::vector<std::string>& output, bool trim_whitespace) {
 
 			if (input.empty() == true) { return; }
