@@ -18,30 +18,28 @@
 int main(int argc, char** argv) {
 	
 	BOOL result;
-	DWORD current_brightness, min_brightness, max_brightness;
 
 	// temporary strings for output
 	std::string output_string; 
 	std::wstring output_wstring;
 
-
 	std::vector<PHYSICAL_MONITOR> physical_monitors_vector;
-	result = EnumDisplayMonitors(NULL, NULL, monitor::monitor_enum_proc, (LPARAM)&physical_monitors_vector);
+	result = EnumDisplayMonitors(NULL, NULL, library::monitor::monitor_enum_proc, (LPARAM)&physical_monitors_vector);
 	
 	if (result == FALSE) {
-		logger::log_error("Display enumeration error");
+		library::logger::log_error("Display enumeration error");
 		return 1;
 	}
 
 	size_t number_of_physical_monitors = physical_monitors_vector.size();
 
 	if (number_of_physical_monitors <= 0) {
-		logger::log_warning("No monitors detected");
+		library::logger::log_warning("No monitors detected");
 		return 1;
 	}
 	
 	output_string = std::to_string(number_of_physical_monitors) + " monitor/s found";
-	logger::log(output_string.c_str());
+	library::logger::log(output_string.c_str());
 
 	if (argc < 2) {
 		// display current brightness of all monitors w/ monitor name
@@ -49,7 +47,7 @@ int main(int argc, char** argv) {
 		for (unsigned int i = 0; i < number_of_physical_monitors; i++) {
 			
 			PHYSICAL_MONITOR current_physical_monitor = physical_monitors_vector[i];
-			monitor::check_monitor_brightness(current_physical_monitor, i);
+			library::monitor::check_monitor_brightness(current_physical_monitor, i);
 			
 		}
 
@@ -58,11 +56,11 @@ int main(int argc, char** argv) {
 		
 		std::map<int, int> monitor_params;
 
-		monitor::parse_args_to_monitor_params(argc, argv, monitor_params);
+		library::monitor::parse_args_to_monitor_params(argc, argv, monitor_params);
 
 		if (monitor_params.size() == 0) {
 			
-			logger::log("No valid parameters");
+			library::logger::log("No valid parameters");
 
 		} else {
 
@@ -78,7 +76,7 @@ int main(int argc, char** argv) {
 
 					int monitor_index = i + 1;
 					if (monitor_params.contains(monitor_index) == false) {
-						monitor::set_monitor_brightness(physical_monitors_vector[i], monitor_index, all_monitors_brightness);
+						library::monitor::set_monitor_brightness(physical_monitors_vector[i], monitor_index, all_monitors_brightness);
 					}
 
 				}
@@ -95,12 +93,12 @@ int main(int argc, char** argv) {
 				int vector_index = index - 1;
 				if (vector_index >= number_of_physical_monitors || vector_index < 0) { // index out of range
 					
-					logger::log_warning(("Invalid monitor index (" + std::to_string(index) + ")").c_str());
+					library::logger::log_warning(("Invalid monitor index (" + std::to_string(index) + ")").c_str());
 					continue;
 
 				}
 
-				monitor::set_monitor_brightness(physical_monitors_vector[vector_index], index, brightness);
+				library::monitor::set_monitor_brightness(physical_monitors_vector[vector_index], index, brightness);
 
 			}
 
