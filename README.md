@@ -1,5 +1,7 @@
 # montools
-Simple CLI Monitor Tools for Windows
+Simple CLI Monitor Tools written in Rust
+
+[Similar C++ verion](https://github.com/xTeamStanly/montools/tree/cpp)
 
 ## monb - Monitor Brightness
 ### Argument example
