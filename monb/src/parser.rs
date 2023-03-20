@@ -301,7 +301,10 @@ fn parse_bvalue_from_regex(original: &String, captures: Captures, logger: &Logge
                 action = BAction::Set;
                 val
             } else if MIN_NAMES.contains(&m_str) {
-                Some(1)
+                match action {
+                    BAction::Set => Some(0),
+                    _ => Some(1)
+                }
             } else {
                 None
             }
@@ -416,7 +419,10 @@ fn parse_barg_from_regex(original: &String, captures: Captures, logger: &Logger)
                 action = BAction::Set;
                 val
             } else if MIN_NAMES.contains(&m_str) {
-                Some(1)
+                match action {
+                    BAction::Set => Some(0),
+                    _ => Some(1)
+                }
             } else {
                 None
             }
