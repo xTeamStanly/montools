@@ -1,20 +1,16 @@
 use std::num::IntErrorKind;
 use std::str::FromStr;
 
-use crate::cli::flags::Flags;
 use crate::cli::arguments::{Duration, Unit};
 use crate::cli::regexes::DURATION_REGEX;
-use log::info;
+use log::debug;
 
-pub fn parse_duration(input: Option<String>, flags: &Flags) -> Result<Duration, String> {
+pub fn parse_duration(input: Option<String>) -> Result<Duration, String> {
 
     let raw_duration: String = match input {
         Some(d) => d,
         None => {
-            if flags.verbose {
-                info!("No duration value provided, turning off immediately");
-            }
-
+            debug!("No duration value provided, turning off immediately");
             return Ok(Duration::default());
         }
     };
@@ -39,15 +35,13 @@ pub fn parse_duration(input: Option<String>, flags: &Flags) -> Result<Duration, 
     let duration_unit: Unit = match captures.get(2) {
         Some(raw_unit) => Unit::from_str(raw_unit.as_str()).map_err(|err| err.to_string())?,
         None => {
-            if flags.verbose {
-                info!("No duration unit provided, using seconds");
-            }
+            debug!("No duration unit provided, using seconds");
             Unit::default()
         }
     };
 
-    if duration_value == 0 && flags.verbose {
-        info!("Provided duration value is `0`, turning off immediately");
+    if duration_value == 0 {
+        debug!("Provided duration value is `0`, turning off immediately");
     }
 
     return Ok(Duration { value: duration_value, unit: Some(duration_unit) });

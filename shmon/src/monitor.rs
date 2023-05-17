@@ -1,5 +1,5 @@
-use log::info;
-use crate::cli::{arguments::Duration, flags::Flags};
+use log::{info, debug};
+use crate::cli::arguments::Duration;
 
 #[cfg(windows)]
 use crate::monitor::windows::turn_off;
@@ -7,7 +7,7 @@ use crate::monitor::windows::turn_off;
 #[cfg(target_os = "linux")]
 use crate::monitor::linux::turn_off;
 
-pub fn execute_duration(duration: Duration, flags: &Flags) -> Result<(), String> {
+pub fn execute_duration(duration: Duration) -> Result<(), String> {
 
     if duration.value == 0 {
         turn_off();
@@ -17,10 +17,7 @@ pub fn execute_duration(duration: Duration, flags: &Flags) -> Result<(), String>
     info!("{}", duration);
     std::thread::sleep(duration.try_into()?);
 
-    if flags.verbose {
-        info!("Time is up! Sleeping...");
-    }
-
+    debug!("Time is up! Sleeping...");
     turn_off();
 
     return Ok(());

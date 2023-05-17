@@ -7,6 +7,8 @@ pub mod regexes {
 }
 
 pub mod flags {
+    use clap::ArgMatches;
+
     pub const COLOR: &'static str = "color_flag";
     pub const VERBOSE: &'static str = "verbose_flag";
 
@@ -14,6 +16,15 @@ pub mod flags {
     pub struct Flags {
         pub support_color: bool,
         pub verbose: bool
+    }
+
+    impl From<&ArgMatches> for Flags {
+        fn from(value: &ArgMatches) -> Self {
+            Self {
+                support_color: value.get_flag(COLOR),
+                verbose: value.get_flag(VERBOSE)
+            }
+        }
     }
 }
 

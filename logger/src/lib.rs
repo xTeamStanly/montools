@@ -3,10 +3,13 @@ use log::Level::*;
 use log::Metadata;
 use colored::*;
 
-pub struct Logger;
+pub struct Logger {
+    pub verbose: bool
+}
+
 impl Log for Logger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= Trace
+        metadata.level() <= (if self.verbose { Debug } else { Info })
     }
 
     fn flush(&self) {}

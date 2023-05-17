@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 colored = "2.0.0"
-log = "0.4.17"
+log = { version = "0.4.17", features = ["std"] }
