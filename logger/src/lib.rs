@@ -1,23 +1,23 @@
-use owo_colors::OwoColorize;
+use log::Log;
+use log::Level::*;
+use log::Metadata;
+use colored::*;
 
-enum Severity {
-    Debug,
-    Information,
-    Warning,
-    Error
-}
+pub struct Logger;
+impl Log for Logger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= Trace
+    }
 
-fn log<T: Into<String>>(input: T, severity: Severity) {
-    let message: String = input.into();
-    match severity {
-        Severity::Debug => println!("{} {}", "[DBG] ".cyan(), message),
-        Severity::Information => println!("{} {}", "[INFO]".green(), message),
-        Severity::Warning => println!("{} {}", "[WARN]".yellow(), message),
-        Severity::Error => println!("{} {}", "[ERR] ".red(), message)
+    fn flush(&self) {}
+
+    fn log(&self, record: &log::Record) {
+        match record.level() {
+            Debug => println!("{} {}", "[DBG] ".cyan(), record.args()),
+            Info =>  println!("{} {}", "[INFO]".green(), record.args()),
+            Warn =>  println!("{} {}", "[WARN]".yellow(), record.args()),
+            Trace => println!("{} {}", "[TRC] ".blue(), record.args()),
+            Error => println!("{} {}", "[ERR] ".red(), record.args())
+        }
     }
 }
-
-pub fn log_debug<T: Into<String>>(input: T) { log(input, Severity::Debug); }
-pub fn log_info<T: Into<String>>(input: T) { log(input, Severity::Information); }
-pub fn log_warn<T: Into<String>>(input: T) { log(input, Severity::Warning); }
-pub fn log_error<T: Into<String>>(input: T) { log(input, Severity::Error); }
