@@ -72,11 +72,13 @@ pub mod arguments {
         type Error = String;
 
         fn try_into(self) -> Result<std::time::Duration, Self::Error> {
-            match self.unit.unwrap_or_default() {
-                Unit::Seconds => std::time::Duration::try_from_secs_f64(self.value as f64).map_err(|_| format!("Invalid duration `{}`", self.value)),
-                Unit::Minutes => std::time::Duration::try_from_secs_f64((self.value * 60) as f64).map_err(|_| format!("Invalid duration `{}`", self.value)),
-                Unit::Hours => std::time::Duration::try_from_secs_f64((self.value * 60 * 60) as f64).map_err(|_| format!("Invalid duration `{}`", self.value)),
-            }
+            let duration_value: f64 = match self.unit.unwrap_or_default() {
+                Unit::Seconds => self.value,
+                Unit::Minutes => self.value * 60,
+                Unit::Hours => self.value * 60 * 60,
+            } as f64;
+
+            std::time::Duration::try_from_secs_f64(duration_value).map_err(|_| format!("Invalid duration `{}`", self.value))
         }
     }
 
