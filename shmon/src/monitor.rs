@@ -8,7 +8,6 @@ use crate::monitor::windows::turn_off;
 use crate::monitor::linux::turn_off;
 
 pub fn execute_duration(duration: Duration) -> Result<(), String> {
-
     if duration.value == 0 {
         turn_off();
         return Ok(());

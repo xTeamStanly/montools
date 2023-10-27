@@ -10,7 +10,7 @@ pub fn parse_duration(input: Option<String>) -> Result<Duration, String> {
     let raw_duration: String = match input {
         Some(d) => d,
         None => {
-            debug!("No duration value provided, turning off immediately");
+            debug!("No duration value provided, turning off in 2 seconds");
             return Ok(Duration::default());
         }
     };

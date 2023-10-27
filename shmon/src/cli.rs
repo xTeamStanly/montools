@@ -3,62 +3,56 @@ pub mod regexes {
     use regex::Regex;
 
     const DURATION_RAW: &'static str = "^([0-9]+)(s|sec|m|min|h)?$";
-    pub const DURATION_REGEX: Lazy<Regex> = Lazy::new(|| { Regex::new(&DURATION_RAW).expect("Invalid `duration argument` regex") });
-}
-
-pub mod flags {
-    use clap::ArgMatches;
-
-    pub const COLOR: &'static str = "color_flag";
-    pub const VERBOSE: &'static str = "verbose_flag";
-
-    #[derive(Debug)]
-    pub struct Flags {
-        pub support_color: bool,
-        pub verbose: bool
-    }
-
-    impl From<&ArgMatches> for Flags {
-        fn from(value: &ArgMatches) -> Self {
-            Self {
-                support_color: value.get_flag(COLOR),
-                verbose: value.get_flag(VERBOSE)
-            }
-        }
-    }
+    pub const DURATION_REGEX: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(&DURATION_RAW)
+        .expect("Invalid `duration argument` regex")
+    });
 }
 
 pub mod arguments {
     use std::str::FromStr;
     use std::fmt::Display;
 
-    pub const DURATION_ARGUMENT: &'static str = "duration_argument";
+    pub const FLAG_COLOR_ID: &'static str           = "FLAG_COLOR";
+    pub const FLAG_COLOR_NAME: &'static str         = "COLOR";
+    pub const FLAG_COLOR_LONG_NAME: &'static str    = "nocolor";
+    pub const FLAG_COLOR_HELP: &'static str         = "Disables colored terminal output.";
 
-    #[derive(Debug, Clone)]
+    pub const FLAG_VERBOSE_ID: &'static str         = "FLAG_VERBOSE";
+    pub const FLAG_VERBOSE_NAME: &'static str       = "VERBOSE";
+    pub const FLAG_VERBOSE_SHORT_NAME: char         = 'v';
+    pub const FLAG_VERBOSE_LONG_NAME: &'static str  = "verbose";
+    pub const FLAG_VERBOSE_HELP: &'static str       = "Prints debug information during execution.";
+
+    pub const ARG_DURATION_ID: &'static str     = "ARG_DURATION";
+    pub const ARG_DURATION_NAME: &'static str   = "DURATION";
+    pub const ARG_DURATION_HELP: &'static str   = concat!(
+        "Time duration before the displays are turned off.", '\n',
+        "Format: `[NUMBER][UNIT]`.", '\n',
+        "UNIT includes `s`, `sec`, `m`, `min`, `h` representing seconds, minutes and hours, respectively.", '\n',
+        "Default value (if not set) is 2 seconds."
+    );
+
+    #[derive(Debug, Clone, Default)]
     pub enum Unit {
+        #[default]
         Seconds,
+
         Minutes,
         Hours
-    }
-
-    impl Default for Unit {
-        fn default() -> Self {
-            Self::Seconds
-        }
     }
 
     impl Into<&'static str> for Unit {
         fn into(self) -> &'static str {
             match self {
-                Self::Seconds => "second(s)",
-                Self::Minutes => "minute(s)",
-                Self::Hours => "hour(s)"
+                Self::Seconds   => "second(s)",
+                Self::Minutes   => "minute(s)",
+                Self::Hours     => "hour(s)"
             }
         }
     }
 
     impl FromStr for Unit {
-
         type Err = &'static str;
 
         fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -67,7 +61,6 @@ pub mod arguments {
                 "m" | "min" => Ok(Self::Minutes),
                 "h" => Ok(Self::Hours),
                 _ => Err("Invalid duration unit")
-
             }
         }
     }
@@ -84,12 +77,13 @@ pub mod arguments {
 
         fn try_into(self) -> Result<std::time::Duration, Self::Error> {
             let duration_value: f64 = match self.unit.unwrap_or_default() {
-                Unit::Seconds => self.value,
-                Unit::Minutes => self.value * 60,
-                Unit::Hours => self.value * 60 * 60,
+                Unit::Seconds   => self.value,
+                Unit::Minutes   => self.value * 60,
+                Unit::Hours     => self.value * 60 * 60,
             } as f64;
 
-            std::time::Duration::try_from_secs_f64(duration_value).map_err(|_| format!("Invalid duration `{}`", self.value))
+            std::time::Duration::try_from_secs_f64(duration_value)
+                .map_err(|_| format!("Invalid duration `{}`", self.value))
         }
     }
 
@@ -102,7 +96,7 @@ pub mod arguments {
 
     impl Default for Duration {
         fn default() -> Self {
-            Self { value: 0, unit: None }
+            Self { value: 2, unit: Some(Unit::Seconds) }
         }
     }
 }
