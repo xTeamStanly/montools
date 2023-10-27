@@ -57,19 +57,19 @@ impl Log for Logger {
     fn log(&self, record: &log::Record) {
         if self.colored {
             match record.level() {
-                Level::Debug => println!("{} {}", "[DBG] "  .cyan(),    record.args()),
-                Level::Info =>  println!("{} {}", "[INF] "  .green(),   record.args()),
-                Level::Warn =>  println!("{} {}", "[WRN] "  .yellow(),  record.args()),
-                Level::Trace => println!("{} {}", "[TRC] "  .blue(),    record.args()),
-                Level::Error => println!("{} {}", "[ERR] "  .red(),     record.args())
+                Level::Debug => println!("{} {}", "[DBG]"  .cyan(),    record.args()),
+                Level::Info =>  println!("{} {}", "[INF]"  .green(),   record.args()),
+                Level::Warn =>  println!("{} {}", "[WRN]"  .yellow(),  record.args()),
+                Level::Trace => println!("{} {}", "[TRC]"  .blue(),    record.args()),
+                Level::Error => println!("{} {}", "[ERR]"  .red(),     record.args())
             }
         } else {
             match record.level() {
-                Level::Debug => println!("{} {}", "[DBG] ", record.args()),
-                Level::Info =>  println!("{} {}", "[INF] ", record.args()),
-                Level::Warn =>  println!("{} {}", "[WRN] ", record.args()),
-                Level::Trace => println!("{} {}", "[TRC] ", record.args()),
-                Level::Error => println!("{} {}", "[ERR] ", record.args())
+                Level::Debug => println!("{} {}", "[DBG]", record.args()),
+                Level::Info =>  println!("{} {}", "[INF]", record.args()),
+                Level::Warn =>  println!("{} {}", "[WRN]", record.args()),
+                Level::Trace => println!("{} {}", "[TRC]", record.args()),
+                Level::Error => println!("{} {}", "[ERR]", record.args())
             }
         }
     }
