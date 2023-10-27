@@ -16,7 +16,7 @@ pub fn execute_duration(duration: Duration) -> Result<(), String> {
     info!("{}", duration);
     std::thread::sleep(duration.try_into()?);
 
-    debug!("Time is up! Sleeping...");
+    debug!("Time is up! Waking up...");
     turn_off();
 
     return Ok(());
