@@ -189,7 +189,7 @@ pub fn apply_setter_barg(monitor: &Monitor, barg: &BArg) -> Result<(), String> {
     };
 
     match monitor.device.set(desired_brightness) {
-        Ok(_) => debug!("{} - successfully set monitor brightness to `{}`", monitor.name, desired_brightness),
+        Ok(_) => info!("{} - successfully set monitor brightness to `{}`", monitor.name, desired_brightness),
         Err(err) => error!("{} - failed to set monitor brightness to `{}` ({})", monitor.name, desired_brightness, err.to_string())
     };
 
