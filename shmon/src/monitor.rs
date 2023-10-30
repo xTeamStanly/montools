@@ -1,5 +1,5 @@
 use log::{info, debug};
-use crate::cli::arguments::Duration;
+use crate::cli::params::Duration;
 
 #[cfg(windows)]
 use crate::monitor::windows::turn_off;

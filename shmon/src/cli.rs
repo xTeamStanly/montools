@@ -9,7 +9,7 @@ pub mod regexes {
     });
 }
 
-pub mod arguments {
+pub mod params {
     use std::str::FromStr;
     use std::fmt::Display;
 
@@ -24,12 +24,13 @@ pub mod arguments {
     pub const FLAG_VERBOSE_LONG_NAME: &'static str  = "verbose";
     pub const FLAG_VERBOSE_HELP: &'static str       = "Prints debug information during execution.";
 
-    pub const ARG_DURATION_ID: &'static str     = "ARG_DURATION";
-    pub const ARG_DURATION_NAME: &'static str   = "DURATION";
-    pub const ARG_DURATION_HELP: &'static str   = concat!(
+    pub const ARG_DURATION_ID: &'static str         = "ARG_DURATION";
+    pub const ARG_DURATION_NAME: &'static str       = "DURATION";
+    pub const ARG_DURATION_HELP: &'static str       = concat!(
         "Time duration before the displays are turned off.", '\n',
-        "Format: `[NUMBER][UNIT]`.", '\n',
+        "Format: `[POSITIVE INTEGER][UNIT]`.", '\n',
         "UNIT includes `s`, `sec`, `m`, `min`, `h` representing seconds, minutes and hours, respectively.", '\n',
+        "If the UNIT is not provided, default unit (seconds) will be used.", '\n',
         "Default value (if not set) is 2 seconds."
     );
 
@@ -53,14 +54,14 @@ pub mod arguments {
     }
 
     impl FromStr for Unit {
-        type Err = &'static str;
+        type Err = String;
 
         fn from_str(s: &str) -> Result<Self, Self::Err> {
             match s.to_lowercase().trim() {
                 "s" | "sec" => Ok(Self::Seconds),
                 "m" | "min" => Ok(Self::Minutes),
                 "h" => Ok(Self::Hours),
-                _ => Err("Invalid duration unit")
+                _ => Err(format!("Invalid duration unit: `{}`", s))
             }
         }
     }

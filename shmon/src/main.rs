@@ -1,5 +1,5 @@
 use clap::{Arg, ArgAction, ArgMatches};
-use cli::arguments::{self, Duration};
+use cli::params::{self, Duration};
 use log::error;
 
 use logger::Logger;
@@ -23,33 +23,33 @@ fn main() {
 
     let cli_matches: ArgMatches = clap::command!()
         .args([
-            Arg::new(arguments::ARG_DURATION_ID)
-                .value_name(arguments::ARG_DURATION_NAME)
+            Arg::new(params::ARG_DURATION_ID)
+                .value_name(params::ARG_DURATION_NAME)
+                .help(params::ARG_DURATION_HELP)
                 .action(ArgAction::Set)
-                .help(arguments::ARG_DURATION_HELP)
                 .num_args(0..=1),
 
             // --------------------------------------------- FLAGS ---------------------------------------------
-            Arg::new(arguments::FLAG_COLOR_ID)
-                .value_name(arguments::FLAG_COLOR_NAME)
+            Arg::new(params::FLAG_COLOR_ID)
+                .value_name(params::FLAG_COLOR_NAME)
+                .long(params::FLAG_COLOR_LONG_NAME)
+                .help(params::FLAG_COLOR_HELP)
                 .action(ArgAction::SetFalse)
-                .long(arguments::FLAG_COLOR_LONG_NAME)
-                .help(arguments::FLAG_COLOR_HELP)
                 .global(true),
 
-            Arg::new(arguments::FLAG_VERBOSE_ID)
-                .value_name(arguments::FLAG_VERBOSE_NAME)
+            Arg::new(params::FLAG_VERBOSE_ID)
+                .value_name(params::FLAG_VERBOSE_NAME)
                 .action(ArgAction::SetTrue)
-                .short(arguments::FLAG_VERBOSE_SHORT_NAME)
-                .long(arguments::FLAG_VERBOSE_LONG_NAME)
-                .help(arguments::FLAG_VERBOSE_HELP)
+                .short(params::FLAG_VERBOSE_SHORT_NAME)
+                .long(params::FLAG_VERBOSE_LONG_NAME)
+                .help(params::FLAG_VERBOSE_HELP)
                 .global(true),
         ]).get_matches();
 
     // init logger and check for errors
     if let Err(err) = Logger::default()
-        .colored(cli_matches.get_flag(arguments::FLAG_COLOR_ID))
-        .verbose(cli_matches.get_flag(arguments::FLAG_VERBOSE_ID))
+        .colored(cli_matches.get_flag(params::FLAG_COLOR_ID))
+        .verbose(cli_matches.get_flag(params::FLAG_VERBOSE_ID))
         .init_logger()
     {
         eprintln!("{}", err);
@@ -58,7 +58,7 @@ fn main() {
 
     // extract argument
     let raw_duration_argument: Option<String> = cli_matches
-        .get_one::<String>(arguments::ARG_DURATION_ID)
+        .get_one::<String>(params::ARG_DURATION_ID)
         .map(|x| x.trim().to_lowercase());
 
     // parse duration
