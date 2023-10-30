@@ -22,7 +22,7 @@ If the UNIT is not provided, default unit (seconds) will be used.
 ```./shmon 10 or ./shmon 10s or ./shmon 10sec ``` - will turn all displays off in 10 seconds
 
 
-## monb - Monitor Brightness
+## monb - **MON**itor **B**rightness
 Very simple CLI tool for controlling monitor brightness.
 
 ### Usage
