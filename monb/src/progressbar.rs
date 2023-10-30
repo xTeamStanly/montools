@@ -1,75 +1,80 @@
-use crate::{logger::Logger, cli::arguments::DEFAULT_PROGRESSBAR_STYLE};
+use clap::ArgMatches;
+use log::debug;
+use std::num::IntErrorKind;
+use strum::{EnumIter, IntoStaticStr, Display};
+
+use crate::cli::params::{ARG_PROGRESSBAR_LENGTH_MAX, ARG_PROGRESSBAR_LENGTH_DEFAULT, ARG_PROGRESSBAR_LENGTH_MIN, ARG_PROGRESSBAR_LENGTH_ID, ARG_PROGRESSBAR_STYLE_ID};
 
 #[derive(Debug, Default)]
+#[derive(EnumIter, IntoStaticStr, Display)]
 pub enum ProgressBarType {
-    Classic,
-    Arrow,
-    WSL,
+    #[strum(serialize = "classic")]     Classic,
+    #[strum(serialize = "arrow")]       Arrow,
+    #[strum(serialize = "wsl")]         WSL,
+
     #[default]
-    WSLArrow,
-    Filled
+    #[strum(serialize = "wsl_arrow")]   WSLArrow,
+
+    #[strum(serialize = "filled")]      Filled
 }
 
-impl ProgressBarType {
-    pub fn from_str(original: &String, logger: &Logger) -> ProgressBarType {
+impl TryFrom<Option<&String>> for ProgressBarType {
 
-        let normalized: String = original.trim().to_lowercase();
-        let normalized_str: &str = normalized.as_str();
-        let recognized: bool = match normalized_str {
-            "classic" | "wsl" | "arrow" | "wsl_arrow" | "filled" => true,
-            _ => false
+    type Error = String;
+
+    fn try_from(value: Option<&String>) -> Result<Self, Self::Error> {
+
+        let potential_style: &String = match value {
+            None => return Ok(Self::default()),
+            Some(v) => v
         };
 
-        match normalized_str {
-            "classic" => {
-                if recognized {
-                    logger.log_verbose_info(format!("Recognized `{}` as `classic`", original));
-                } else {
-                    logger.log_verbose_info("Succesfully parsed progressbar style: `classic`");
-                }
-                return Self::Classic;
-            },
+        debug!("Parsing progressbar style: `{}`", potential_style);
 
-            "wsl" => {
-                if recognized {
-                    logger.log_verbose_info(format!("Recognized `{}` as `wsl`", original));
-                } else {
-                    logger.log_verbose_info("Succesfully parsed progressbar style: `wsl`");
-                }
-                return Self::WSL;
-            },
+        let normalized_style: String = potential_style.trim().to_lowercase();
+        let value: Result<Self, Self::Error> = match normalized_style.as_str() {
+            "classic" => Ok(Self::Classic),
+            "wsl" => Ok(Self::WSL),
+            "arrow" => Ok(Self::Arrow),
+            "wsl_arrow" => Ok(Self::WSLArrow),
+            "filled" => Ok(Self::Filled),
+            _ => Err(format!("Invalid progress bar type: `{}`", potential_style))
+        };
 
-            "arrow" => {
-                if recognized {
-                    logger.log_verbose_info(format!("Recognized `{}` as `arrow`", original));
-                } else {
-                    logger.log_verbose_info("Succesfully parsed progressbar style: `arrow`");
-                }
-                return Self::Arrow;
-            },
+        if value.is_ok() {
+            debug!("Recognized progressbar style: `{}`", normalized_style);
+        }
 
-            "wsl_arrow" => {
-                if recognized {
-                    logger.log_verbose_info(format!("Recognized `{}` as `wsl_arrow`", original));
-                } else {
-                    logger.log_verbose_info("Succesfully parsed progressbar style: `wsl_arrow`");
-                }
-                return Self::WSLArrow;
-            },
+        return value;
+    }
+}
 
-            "filled" => {
-                if recognized {
-                    logger.log_verbose_info(format!("Recognized `{}` as `filled`", original));
-                } else {
-                    logger.log_verbose_info("Succesfully parsed progressbar style: `filled`");
-                }
-                return Self::Filled;
-            },
+fn parse_progressbar_length(possible_input: Option<&String>) -> Result<usize, String> {
 
-            _ => {
-                logger.log_warn(format!("Invalid value provided for progressbar style. Using default: `{}`", DEFAULT_PROGRESSBAR_STYLE));
-                return Self::default();
+    let input: &String = match possible_input {
+        None => return Ok(ARG_PROGRESSBAR_LENGTH_DEFAULT),
+        Some(i) => i
+    };
+
+    debug!("Parsing progressbar length: `{}`", input);
+
+    match input.parse::<usize>() {
+
+        Ok(number) => {
+            if number > ARG_PROGRESSBAR_LENGTH_MAX {
+                debug!("Progressbar length `{}` is too big, clamping to {}", number, ARG_PROGRESSBAR_LENGTH_MAX);
+                return Ok(ARG_PROGRESSBAR_LENGTH_MAX);
+            } else if number < ARG_PROGRESSBAR_LENGTH_MIN {
+                debug!("Progressbar length `{}` is too small, clamping to {}", number, ARG_PROGRESSBAR_LENGTH_MIN);
+                return Ok(ARG_PROGRESSBAR_LENGTH_MIN);
+            } else {
+                return Ok(number);
             }
+        },
+
+        Err(err) => match err.kind() {
+            IntErrorKind::PosOverflow => Err(format!("Progressbar length `{}` is too big", input)),
+            _ => Err(format!("Invalid progressbar length: {}", input))
         }
     }
 }
@@ -80,13 +85,30 @@ pub struct ProgressBarInfo {
     pub length: usize
 }
 
-pub fn create_progressbar(clamped_brightness: u32, length: usize, progressbar_type: &ProgressBarType) -> String {
-    match progressbar_type {
-        ProgressBarType::Classic => create_classic_progressbar(clamped_brightness, length),
-        ProgressBarType::Arrow => create_arrow_progressbar(clamped_brightness, length),
-        ProgressBarType::WSL => create_wsl_progressbar(clamped_brightness, length),
-        ProgressBarType::WSLArrow => create_wsl_arrow_progressbar(clamped_brightness, length),
-        ProgressBarType::Filled => create_filled_progressbar(clamped_brightness, length)
+impl TryFrom<&ArgMatches> for ProgressBarInfo {
+    type Error = String;
+
+    fn try_from(value: &ArgMatches) -> Result<Self, Self::Error> {
+        let progressbar_length_unparsed: Option<&String> = value.get_one::<String>(ARG_PROGRESSBAR_LENGTH_ID);
+        let progressbar_length: usize = parse_progressbar_length(progressbar_length_unparsed)?;
+
+        let progressbar_type_unparsed: Option<&String> = value.get_one::<String>(ARG_PROGRESSBAR_STYLE_ID);
+        let progressbar_type: ProgressBarType = ProgressBarType::try_from(progressbar_type_unparsed)?;
+
+        Ok(ProgressBarInfo {
+            _type: progressbar_type,
+            length: progressbar_length
+        })
+    }
+}
+
+pub fn create_progressbar(clamped_brightness: u32, progressbar_info: &ProgressBarInfo) -> String {
+    match progressbar_info._type {
+        ProgressBarType::Classic => create_classic_progressbar(clamped_brightness, progressbar_info.length),
+        ProgressBarType::Arrow => create_arrow_progressbar(clamped_brightness, progressbar_info.length),
+        ProgressBarType::WSL => create_wsl_progressbar(clamped_brightness, progressbar_info.length),
+        ProgressBarType::WSLArrow => create_wsl_arrow_progressbar(clamped_brightness, progressbar_info.length),
+        ProgressBarType::Filled => create_filled_progressbar(clamped_brightness, progressbar_info.length)
     }
 }
 

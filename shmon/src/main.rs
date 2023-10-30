@@ -1,9 +1,7 @@
 use clap::{Arg, ArgAction, ArgMatches};
-use cli::arguments::{DURATION_ARGUMENT, Duration};
-use cli::flags::Flags;
-use cli::{arguments, flags};
+use cli::params::{self, Duration};
 use log::error;
-use log::LevelFilter::Trace;
+
 use logger::Logger;
 
 mod cli;
@@ -15,52 +13,53 @@ use parser::parse_duration;
 
 fn main() {
 
-    let cli_matches: ArgMatches = clap::command!()
-        .args([
-            Arg::new(arguments::DURATION_ARGUMENT)
-                .value_name("DURATION")
-                .action(ArgAction::Set)
-                .num_args(0..=1)
-                .help("Time duration before the displays are turned off.\nFormat: `[NUMBER][UNIT]`.\nUNIT includes `s`, `sec`, `m`, `min`, `h` representing seconds, minutes and hours, respectively"),
-
-            // --------------------------------------------- FLAGS ---------------------------------------------
-            Arg::new(flags::COLOR)
-                .long("nocolor")
-                .action(ArgAction::SetFalse)
-                .global(true)
-                .help("Disables colored terminal output"),
-
-            Arg::new(flags::VERBOSE)
-                .short('v')
-                .long("verbose")
-                .action(ArgAction::SetTrue)
-                .global(true)
-                .help("Prints debug information during execution"),
-        ]).get_matches();
-
-    // extract flags
-    let cli_flags: Flags = Flags::from(&cli_matches);
-
-    // init logger and check for errors
-    let logger: Box<Logger> = Box::new(Logger { verbose: cli_flags.verbose });
-    if let Err(err) = log::set_boxed_logger(logger) {
-        eprintln!("{}", err);
-        return;
-    } else {
-        log::set_max_level(Trace);
-    };
-
-    // disable colors
-    if cli_flags.support_color == false {
-        std::env::set_var("NO_COLOR", "");
+    // quickfix: clap color errors
+    // clap can print error message in color
+    // before logger even starts
+    if let Some(_) = std::env::args_os().find(|arg| arg.to_ascii_lowercase() == "--nocolor") {
+        std::env::set_var("NO_COLOR", "1");
         std::env::set_var("CLICOLOR", "0");
     }
 
+    let cli_matches: ArgMatches = clap::command!()
+        .args([
+            Arg::new(params::ARG_DURATION_ID)
+                .value_name(params::ARG_DURATION_NAME)
+                .help(params::ARG_DURATION_HELP)
+                .action(ArgAction::Set)
+                .num_args(0..=1),
+
+            // --------------------------------------------- FLAGS ---------------------------------------------
+            Arg::new(params::FLAG_COLOR_ID)
+                .value_name(params::FLAG_COLOR_NAME)
+                .long(params::FLAG_COLOR_LONG_NAME)
+                .help(params::FLAG_COLOR_HELP)
+                .action(ArgAction::SetFalse)
+                .global(true),
+
+            Arg::new(params::FLAG_VERBOSE_ID)
+                .value_name(params::FLAG_VERBOSE_NAME)
+                .action(ArgAction::SetTrue)
+                .short(params::FLAG_VERBOSE_SHORT_NAME)
+                .long(params::FLAG_VERBOSE_LONG_NAME)
+                .help(params::FLAG_VERBOSE_HELP)
+                .global(true),
+        ]).get_matches();
+
+    // init logger and check for errors
+    if let Err(err) = Logger::default()
+        .colored(cli_matches.get_flag(params::FLAG_COLOR_ID))
+        .verbose(cli_matches.get_flag(params::FLAG_VERBOSE_ID))
+        .init_logger()
+    {
+        eprintln!("{}", err);
+        return;
+    }
+
     // extract argument
-    let raw_duration_argument: Option<String> = match cli_matches.get_one::<String>(DURATION_ARGUMENT) {
-        None => None,
-        Some(r) => Some(r.trim().to_lowercase())
-    };
+    let raw_duration_argument: Option<String> = cli_matches
+        .get_one::<String>(params::ARG_DURATION_ID)
+        .map(|x| x.trim().to_lowercase());
 
     // parse duration
     let parsed_duration_argument: Duration = match parse_duration(raw_duration_argument) {
